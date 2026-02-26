@@ -265,6 +265,10 @@ body.dark .pri-btn.active-high{background:#200810;}
   background:var(--cell-bg);border:none;border-radius:8px;
   width:27px;height:27px;cursor:pointer;font-size:0.95rem;color:var(--text);
 }
+@keyframes modalPop{0%{transform:scale(0.5);opacity:0;}70%{transform:scale(1.08);}100%{transform:scale(1);opacity:1;}}
+@keyframes ringFlash{0%,100%{opacity:1;}50%{opacity:0.15;}}
+.modal-pop{animation:modalPop 0.45s cubic-bezier(0.175,0.885,0.32,1.275) both;}
+.ring-flash{animation:ringFlash 0.4s ease 3;}
 @media print{
   .sidebar,.header-actions,.streak-badge,.pomo-controls,.hours-ctrl,
   .del-btn,.check-btn,.expand-btn,.add-btn,.modal-overlay,.nav-btn{display:none!important;}
@@ -377,29 +381,46 @@ body.dark .pri-btn.active-high{background:#200810;}
       </div>
 
       <!-- CUSTOM TIMES -->
-      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
         <div>
-          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Focus (min)</p>
+          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">Focus</p>
           <div style="display:flex;align-items:center;gap:5px">
-            <input type="number" id="pomo-focus-input" min="1" max="120" value="25"
-              style="font-family:'Nunito',sans-serif;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+            <input type="number" id="pomo-focus-min" min="0" max="120" value="25"
+              style="font-family:'Space Mono',monospace;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
               oninput="applyCustomTimes()" />
+            <span style="font-weight:800;color:var(--muted);font-size:0.8rem">min</span>
+            <input type="number" id="pomo-focus-sec" min="0" max="59" value="0"
+              style="font-family:'Space Mono',monospace;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+              oninput="applyCustomTimes()" />
+            <span style="font-weight:800;color:var(--muted);font-size:0.8rem">sec</span>
           </div>
         </div>
         <div>
-          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Break (min)</p>
+          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">Short Break</p>
           <div style="display:flex;align-items:center;gap:5px">
-            <input type="number" id="pomo-break-input" min="1" max="60" value="5"
-              style="font-family:'Nunito',sans-serif;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+            <input type="number" id="pomo-break-min" min="0" max="60" value="5"
+              style="font-family:'Space Mono',monospace;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
               oninput="applyCustomTimes()" />
+            <span style="font-weight:800;color:var(--muted);font-size:0.8rem">min</span>
+            <input type="number" id="pomo-break-sec" min="0" max="59" value="0"
+              style="font-family:'Space Mono',monospace;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+              oninput="applyCustomTimes()" />
+            <span style="font-weight:800;color:var(--muted);font-size:0.8rem">sec</span>
           </div>
         </div>
-      </div>
-      <div style="margin-top:7px">
-        <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Long Break (min)</p>
-        <input type="number" id="pomo-long-input" min="1" max="120" value="15"
-          style="font-family:'Nunito',sans-serif;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
-          oninput="applyCustomTimes()" />
+        <div>
+          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px">Long Break</p>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="pomo-long-min" min="0" max="120" value="15"
+              style="font-family:'Space Mono',monospace;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+              oninput="applyCustomTimes()" />
+            <span style="font-weight:800;color:var(--muted);font-size:0.8rem">min</span>
+            <input type="number" id="pomo-long-sec" min="0" max="59" value="0"
+              style="font-family:'Space Mono',monospace;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+              oninput="applyCustomTimes()" />
+            <span style="font-weight:800;color:var(--muted);font-size:0.8rem">sec</span>
+          </div>
+        </div>
       </div>
 
       <!-- SESSIONS -->
@@ -429,7 +450,7 @@ body.dark .pri-btn.active-high{background:#200810;}
 
 <!-- POMO MODAL -->
 <div class="modal-overlay" id="pomo-modal">
-  <div class="modal">
+  <div class="modal" id="pomo-modal-box">
     <button class="modal-close" onclick="closePomoModal()">✕</button>
     <div style="font-size:3rem;margin-bottom:10px" id="pomo-modal-icon">🎉</div>
     <h3 style="font-size:1.1rem;font-weight:900;margin-bottom:8px" id="pomo-modal-title">Session Complete!</h3>
@@ -437,6 +458,9 @@ body.dark .pri-btn.active-high{background:#200810;}
     <button class="add-btn" onclick="closePomoModal()" style="width:100%">Let's go! 💪</button>
   </div>
 </div>
+
+<!-- CONFETTI CANVAS -->
+<canvas id="confetti-canvas" style="position:fixed;inset:0;pointer-events:none;z-index:99;display:none"></canvas>
 
 <script>
 const COLORS=['#FF6B9D','#FFD93D','#6BCB77','#4D96FF','#C77DFF','#FF9A3C','#FF4D6D','#00C9A7'];
@@ -552,9 +576,11 @@ function getRecurring(ds,dow){
 function addDots(el,ds){
   const dow=new Date(ds+'T12:00:00').getDay();
   const all=[...tasks.filter(t=>t.date===ds&&!t.recur),...getRecurring(ds,dow)];
-  if(all.length){
+  const hasExam=exams.some(e=>e.date===ds);
+  if(all.length||hasExam){
     const row=document.createElement('div');row.className='dot-row';
-    all.slice(0,5).forEach(t=>{const d=document.createElement('div');d.className='dot';d.style.background=t.color;row.appendChild(d);});
+    all.slice(0,4).forEach(t=>{const d=document.createElement('div');d.className='dot';d.style.background=t.color;row.appendChild(d);});
+    if(hasExam){const star=document.createElement('span');star.textContent='★';star.style.cssText='font-size:7px;color:#FF4D6D;line-height:1;';row.appendChild(star);}
     el.appendChild(row);
   }
 }
@@ -576,13 +602,35 @@ function renderTasks(){
   document.getElementById('selected-label').textContent=isToday?'📋 Tasks for Today':'📋 Tasks for '+formatDisplay(selectedDay);
   const list=document.getElementById('task-list');
   const dayTasks=getTasksForDay(ds);
+  const dayExams=exams.filter(e=>e.date===ds);
   const po={high:0,med:1,low:2};
   dayTasks.sort((a,b)=>{
     if(a.done!==b.done)return a.done?1:-1;
     return (po[a.priority||'low'])-(po[b.priority||'low']);
   });
-  if(!dayTasks.length){list.innerHTML='<p class="no-tasks">No tasks this day 🌸<br>Add one using the form!</p>';return;}
+  if(!dayTasks.length&&!dayExams.length){list.innerHTML='<p class="no-tasks">No tasks this day 🌸<br>Add one using the form!</p>';return;}
   list.innerHTML='';
+
+  // Render exam cards first
+  const today=new Date();today.setHours(0,0,0,0);
+  dayExams.forEach(e=>{
+    const examDate=new Date(e.date+'T00:00:00');
+    const days=Math.ceil((examDate-today)/86400000);
+    const el=document.createElement('div');
+    el.style.cssText='border-radius:14px;margin-bottom:8px;overflow:hidden;background:linear-gradient(135deg,#FF4D6D,#C77DFF);padding:12px 14px;display:flex;justify-content:space-between;align-items:center;animation:slideIn 0.2s ease;';
+    el.innerHTML=`
+      <div>
+        <div style="font-size:0.68rem;font-weight:800;color:rgba(255,255,255,0.75);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Exam</div>
+        <div style="font-weight:800;font-size:0.95rem;color:white">${escHtml(e.name)}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'Space Mono',monospace;font-size:1.4rem;font-weight:700;color:white;line-height:1">${days===0?'TODAY':days+'d'}</div>
+        <div style="font-size:0.65rem;color:rgba(255,255,255,0.7);margin-top:2px">${days===0?'Good luck!':days===1?'tomorrow':'to go'}</div>
+      </div>
+    `;
+    list.appendChild(el);
+  });
+
   dayTasks.forEach(t=>{
     const el=document.createElement('div');
     el.className='task-item'+(t.done?' task-done':'');
@@ -719,12 +767,19 @@ function switchMode(mode){
   });
 }
 
+function parseTime(minId, secId){
+  const m=parseInt(document.getElementById(minId).value)||0;
+  const s=parseInt(document.getElementById(secId).value)||0;
+  return Math.max(1, m*60 + s);
+}
+
 function applyCustomTimes(){
   if(pomo.running) return;
-  const f=parseInt(document.getElementById('pomo-focus-input').value)||25;
-  const b=parseInt(document.getElementById('pomo-break-input').value)||5;
-  const l=parseInt(document.getElementById('pomo-long-input').value)||15;
-  DURATIONS={focus:f*60,short:b*60,long:l*60};
+  DURATIONS={
+    focus: parseTime('pomo-focus-min','pomo-focus-sec'),
+    short: parseTime('pomo-break-min','pomo-break-sec'),
+    long:  parseTime('pomo-long-min', 'pomo-long-sec')
+  };
   pomo.timeLeft=DURATIONS[pomo.mode];
   updatePomoDisplay();
 }
@@ -789,19 +844,107 @@ function resetPomo(){
   switchMode('focus');
 }
 
+function playSound(isFocus){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(isFocus){
+      // gentle ascending chime for break-over
+      [523,659,784].forEach((freq,i)=>{
+        const o=ctx.createOscillator();const g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.type='sine';o.frequency.setValueAtTime(freq,ctx.currentTime+i*0.18);
+        g.gain.setValueAtTime(0,ctx.currentTime+i*0.18);
+        g.gain.linearRampToValueAtTime(0.3,ctx.currentTime+i*0.18+0.05);
+        g.gain.linearRampToValueAtTime(0,ctx.currentTime+i*0.18+0.35);
+        o.start(ctx.currentTime+i*0.18);o.stop(ctx.currentTime+i*0.18+0.4);
+      });
+    } else {
+      // celebratory fanfare for session complete
+      [523,659,784,1047].forEach((freq,i)=>{
+        const o=ctx.createOscillator();const g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.type='triangle';o.frequency.setValueAtTime(freq,ctx.currentTime+i*0.12);
+        g.gain.setValueAtTime(0,ctx.currentTime+i*0.12);
+        g.gain.linearRampToValueAtTime(0.35,ctx.currentTime+i*0.12+0.04);
+        g.gain.linearRampToValueAtTime(0,ctx.currentTime+i*0.12+0.3);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.35);
+      });
+    }
+  }catch(e){}
+}
+
+// CONFETTI
+let confettiParticles=[];
+function launchConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+  canvas.style.display='block';
+  const ctx=canvas.getContext('2d');
+  const colors=['#FF6B9D','#FFD93D','#6BCB77','#4D96FF','#C77DFF','#FF9A3C','#FF4D6D','#00C9A7'];
+  confettiParticles=Array.from({length:120},()=>({
+    x:Math.random()*canvas.width,y:-10,
+    r:Math.random()*6+3,
+    color:colors[Math.floor(Math.random()*colors.length)],
+    speed:Math.random()*4+2,
+    drift:Math.random()*3-1.5,
+    spin:Math.random()*0.3-0.15,
+    angle:Math.random()*Math.PI*2,
+    shape:Math.random()>0.5?'circle':'rect'
+  }));
+  let frames=0;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    confettiParticles.forEach(p=>{
+      ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.angle);
+      ctx.fillStyle=p.color;ctx.globalAlpha=Math.max(0,1-frames/90);
+      if(p.shape==='circle'){ctx.beginPath();ctx.arc(0,0,p.r,0,Math.PI*2);ctx.fill();}
+      else{ctx.fillRect(-p.r,-p.r/2,p.r*2,p.r);}
+      ctx.restore();
+      p.y+=p.speed;p.x+=p.drift;p.angle+=p.spin;
+    });
+    frames++;
+    if(frames<100) requestAnimationFrame(draw);
+    else{ctx.clearRect(0,0,canvas.width,canvas.height);canvas.style.display='none';}
+  }
+  draw();
+}
+
 function showPomoModal(isFocusTime,isLong){
   const icon=document.getElementById('pomo-modal-icon');
   const title=document.getElementById('pomo-modal-title');
   const msg=document.getElementById('pomo-modal-msg');
-  if(isFocusTime){icon.textContent='💪';title.textContent='Break Over!';msg.textContent='Time to focus again. You got this!';}
-  else{
+  const box=document.getElementById('pomo-modal-box');
+
+  // flash the ring
+  const ring=document.getElementById('pomo-ring-fill');
+  ring.classList.add('ring-flash');
+  setTimeout(()=>ring.classList.remove('ring-flash'),1300);
+
+  if(isFocusTime){
+    icon.textContent='💪';title.textContent='Break Over!';
+    msg.textContent='Time to focus again. You got this!';
+    playSound(true);
+  } else {
     icon.textContent=isLong?'🏆':'🎉';
     title.textContent=isLong?'Long Break Time!':'Session Complete!';
     msg.textContent=isLong?'4 sessions done! Take a well-deserved long break.':'Take a short break — you earned it!';
+    playSound(false);
+    launchConfetti();
   }
+
+  // pop animation on modal
+  box.classList.remove('modal-pop');
+  void box.offsetWidth; // reflow to restart animation
+  box.classList.add('modal-pop');
+
   document.getElementById('pomo-modal').classList.add('open');
 }
-function closePomoModal(){document.getElementById('pomo-modal').classList.remove('open');}
+
+function closePomoModal(){
+  document.getElementById('pomo-modal').classList.remove('open');
+  const canvas=document.getElementById('confetti-canvas');
+  canvas.style.display='none';
+}
 
 // INIT
 renderCalendar();renderTasks();renderExams();renderTracker();
