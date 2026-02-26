@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyVibes</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --pink:#FF6B9D;--yellow:#FFD93D;--mint:#6BCB77;
+  --blue:#4D96FF;--purple:#C77DFF;--orange:#FF9A3C;
+  --red:#FF4D6D;--teal:#00C9A7;
+  --bg:#FFF8F0;--card:#FFFFFF;--text:#2D2D2D;
+  --muted:#999;--border:#EEE;--input-bg:#FAFAFA;
+  --cell-bg:#F9F9F9;--cell-hover:#F0F0F0;--task-bg:#FAFAFA;
+}
+body.dark{
+  --bg:#111318;--card:#1C1F27;--text:#F0F0F0;
+  --muted:#666;--border:#2A2D36;--input-bg:#22252F;
+  --cell-bg:#1E212A;--cell-hover:#252830;--task-bg:#22252F;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);
+  min-height:100vh;transition:background 0.3s,color 0.3s;
+}
+body:not(.dark){
+  background-image:radial-gradient(circle at 10% 20%,#FFE0F0 0%,transparent 40%),
+  radial-gradient(circle at 90% 80%,#E0F0FF 0%,transparent 40%),
+  radial-gradient(circle at 50% 50%,#FFFDE0 0%,transparent 60%);
+}
+body.dark{
+  background-image:radial-gradient(circle at 10% 20%,#1a0a1a 0%,transparent 40%),
+  radial-gradient(circle at 90% 80%,#0a0a1a 0%,transparent 40%);
+}
+header{text-align:center;padding:22px 20px 12px;position:relative;}
+header h1{
+  font-size:2.2rem;font-weight:900;letter-spacing:-1px;
+  background:linear-gradient(135deg,var(--pink),var(--purple),var(--blue));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+header p{color:var(--muted);font-size:0.9rem;margin-top:2px;}
+.header-actions{
+  position:absolute;right:16px;top:22px;
+  display:flex;gap:7px;align-items:center;
+}
+.icon-btn{
+  background:var(--card);border:2px solid var(--border);
+  border-radius:11px;padding:6px 11px;cursor:pointer;
+  font-size:0.82rem;font-weight:700;color:var(--text);
+  transition:all 0.15s;font-family:'Nunito',sans-serif;
+}
+.icon-btn:hover{transform:scale(1.05);border-color:var(--pink);}
+.streak-badge{
+  position:absolute;left:16px;top:22px;
+  background:linear-gradient(135deg,var(--orange),var(--yellow));
+  border-radius:13px;padding:6px 13px;
+  font-weight:900;font-size:0.88rem;color:white;
+  box-shadow:0 4px 12px rgba(255,154,60,0.4);
+  display:flex;align-items:center;gap:5px;
+}
+.app{
+  max-width:1140px;margin:0 auto;
+  padding:0 16px 40px;
+  display:grid;grid-template-columns:1fr 330px;gap:20px;
+}
+@media(max-width:780px){
+  .app{grid-template-columns:1fr;}
+  header h1{font-size:1.6rem;}
+  .header-actions,.streak-badge{position:static;margin:4px auto;}
+}
+.card{
+  background:var(--card);border-radius:20px;padding:20px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.06);
+  border:2px solid var(--border);transition:background 0.3s,border-color 0.3s;
+}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.cal-header h2{font-size:1.22rem;font-weight:800;}
+.nav-btn{
+  background:var(--yellow);border:none;border-radius:50%;
+  width:33px;height:33px;font-size:1rem;cursor:pointer;
+  transition:transform 0.15s;font-weight:700;color:#333;
+}
+.nav-btn:hover{transform:scale(1.15);}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;}
+.day-label{
+  text-align:center;font-size:0.66rem;font-weight:800;
+  color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding-bottom:5px;
+}
+.day-cell{
+  aspect-ratio:1;border-radius:10px;display:flex;flex-direction:column;
+  align-items:center;justify-content:flex-start;padding:4px 2px 2px;
+  cursor:pointer;transition:all 0.15s;background:var(--cell-bg);
+  border:2px solid transparent;min-height:46px;
+}
+.day-cell:hover{background:var(--cell-hover);transform:scale(1.06);}
+.day-cell.today{background:var(--yellow);font-weight:900;border-color:var(--orange);}
+body.dark .day-cell.today{color:#333;}
+.day-cell.selected{border-color:var(--pink);background:#FF6B9D20;}
+.day-cell.other-month{opacity:0.3;}
+.day-num{font-size:0.76rem;font-weight:700;line-height:1;}
+.dot-row{display:flex;gap:2px;margin-top:2px;flex-wrap:wrap;justify-content:center;}
+.dot{width:5px;height:5px;border-radius:50%;}
+.sidebar{display:flex;flex-direction:column;gap:16px;}
+.section-title{
+  font-size:0.73rem;font-weight:800;text-transform:uppercase;
+  letter-spacing:1px;color:var(--muted);margin-bottom:10px;
+}
+.add-form{display:flex;flex-direction:column;gap:9px;}
+.add-form input,.add-form select,.add-form textarea{
+  font-family:'Nunito',sans-serif;border:2px solid var(--border);
+  border-radius:12px;padding:9px 13px;font-size:0.86rem;
+  outline:none;transition:border-color 0.2s;width:100%;
+  background:var(--input-bg);color:var(--text);
+}
+.add-form input:focus,.add-form select:focus,.add-form textarea:focus{
+  border-color:var(--pink);background:var(--card);
+}
+.add-form textarea{resize:vertical;min-height:58px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.color-pick{display:flex;gap:5px;flex-wrap:wrap;}
+.color-swatch{
+  width:20px;height:20px;border-radius:50%;cursor:pointer;
+  border:2px solid transparent;transition:transform 0.15s;
+}
+.color-swatch:hover{transform:scale(1.2);}
+.color-swatch.active{border-color:var(--text);transform:scale(1.2);}
+.add-btn{
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white;border:none;border-radius:12px;padding:11px;
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;
+  cursor:pointer;transition:transform 0.15s,box-shadow 0.15s;
+  box-shadow:0 4px 12px rgba(199,125,255,0.35);
+}
+.add-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(199,125,255,0.5);}
+.priority-row{display:flex;gap:6px;}
+.pri-btn{
+  flex:1;border:2px solid var(--border);border-radius:10px;
+  padding:6px 4px;font-family:'Nunito',sans-serif;font-size:0.73rem;
+  font-weight:700;cursor:pointer;background:var(--input-bg);
+  color:var(--muted);transition:all 0.15s;text-align:center;
+}
+.pri-btn.active-low{background:#E8F8EC;border-color:var(--mint);color:var(--mint);}
+.pri-btn.active-med{background:#FFF8E0;border-color:var(--yellow);color:#B8860B;}
+.pri-btn.active-high{background:#FFE8EE;border-color:var(--red);color:var(--red);}
+body.dark .pri-btn.active-low{background:#0d2010;}
+body.dark .pri-btn.active-med{background:#1f1a00;}
+body.dark .pri-btn.active-high{background:#200810;}
+.main-col{display:flex;flex-direction:column;gap:16px;}
+.selected-date-label{font-weight:800;font-size:1rem;margin-bottom:10px;color:var(--text);}
+.no-tasks{color:var(--muted);font-size:0.85rem;text-align:center;padding:16px 0;}
+.task-item{
+  border-radius:14px;margin-bottom:8px;border-left:4px solid transparent;
+  background:var(--task-bg);animation:slideIn 0.2s ease;overflow:hidden;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px);}to{opacity:1;transform:translateX(0);}}
+.task-main{display:flex;align-items:center;gap:8px;padding:10px 11px;cursor:pointer;}
+.task-text{flex:1;font-weight:600;font-size:0.86rem;}
+.task-done .task-text{text-decoration:line-through;opacity:0.5;}
+.task-subject{
+  font-size:0.66rem;font-weight:700;padding:2px 6px;
+  border-radius:20px;color:white;white-space:nowrap;
+}
+.priority-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.task-notes-body{
+  padding:8px 12px 10px 40px;font-size:0.8rem;color:var(--muted);
+  border-top:1px solid var(--border);display:none;line-height:1.5;
+}
+.task-notes-body.open{display:block;}
+.task-notes-body a{color:var(--blue);text-decoration:underline;}
+.check-btn{
+  width:19px;height:19px;border-radius:6px;border:2px solid var(--border);
+  cursor:pointer;background:var(--card);display:flex;align-items:center;
+  justify-content:center;font-size:0.66rem;flex-shrink:0;transition:all 0.15s;
+}
+.check-btn.checked{background:var(--mint);border-color:var(--mint);color:white;}
+.del-btn{background:none;border:none;cursor:pointer;font-size:0.88rem;opacity:0.35;transition:opacity 0.15s;}
+.del-btn:hover{opacity:1;}
+.expand-btn{background:none;border:none;cursor:pointer;font-size:0.72rem;opacity:0.45;transition:opacity 0.15s;color:var(--muted);}
+.expand-btn:hover{opacity:1;}
+.recurring-badge{
+  font-size:0.62rem;font-weight:700;padding:1px 6px;
+  border-radius:20px;background:var(--blue);color:white;opacity:0.85;
+}
+.countdown-list{display:flex;flex-direction:column;gap:7px;}
+.countdown-item{
+  padding:9px 12px;border-radius:12px;color:white;
+  display:flex;justify-content:space-between;align-items:center;
+  font-weight:700;font-size:0.8rem;
+}
+.countdown-days{font-family:'Space Mono',monospace;font-size:1.15rem;font-weight:700;}
+.empty-state{text-align:center;color:var(--muted);font-size:0.8rem;padding:12px 0;}
+.tracker-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:6px;}
+.tracker-day{text-align:center;}
+.tracker-label{font-size:0.56rem;font-weight:700;color:var(--muted);text-transform:uppercase;}
+.tracker-bar{
+  height:46px;border-radius:6px;background:var(--cell-bg);margin-top:3px;
+  position:relative;overflow:hidden;cursor:pointer;
+}
+.tracker-fill{position:absolute;bottom:0;left:0;right:0;border-radius:6px;transition:height 0.3s ease;}
+.tracker-hours{font-size:0.6rem;font-weight:800;margin-top:2px;color:var(--text);}
+.hours-ctrl{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.h-btn{
+  width:26px;height:26px;border-radius:8px;border:none;
+  background:var(--yellow);font-size:0.95rem;font-weight:700;
+  cursor:pointer;transition:transform 0.1s;color:#333;
+}
+.h-btn:hover{transform:scale(1.1);}
+.today-hours{font-weight:800;font-size:0.92rem;}
+/* POMODORO */
+.pomo-ring{position:relative;width:118px;height:118px;margin:0 auto 14px;}
+.pomo-ring svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:8;}
+.ring-fill{fill:none;stroke:var(--pink);stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 1s linear;}
+.pomo-center{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  text-align:center;
+}
+.pomo-time{font-family:'Space Mono',monospace;font-size:1.45rem;font-weight:700;line-height:1;}
+.pomo-label{font-size:0.62rem;font-weight:800;color:var(--muted);text-transform:uppercase;margin-top:2px;}
+.pomo-controls{display:flex;gap:7px;justify-content:center;margin-bottom:11px;}
+.pomo-btn{
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white;border:none;border-radius:10px;padding:7px 15px;
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;
+  cursor:pointer;transition:transform 0.15s;
+}
+.pomo-btn:hover{transform:scale(1.05);}
+.pomo-btn.secondary{background:var(--cell-bg);color:var(--text);border:2px solid var(--border);}
+.pomo-sessions{text-align:center;font-size:0.75rem;color:var(--muted);font-weight:700;}
+.mode-tab{
+  flex:1;border:2px solid var(--border);border-radius:10px;
+  padding:7px 4px;font-family:'Nunito',sans-serif;font-size:0.75rem;
+  font-weight:800;cursor:pointer;background:var(--input-bg);
+  color:var(--muted);transition:all 0.18s;text-align:center;
+}
+.mode-tab:hover{border-color:var(--pink);color:var(--text);}
+.mode-tab-active{background:linear-gradient(135deg,var(--pink),var(--purple));color:white!important;border-color:transparent!important;box-shadow:0 3px 10px rgba(199,125,255,0.35);}
+.mode-tab-break{background:linear-gradient(135deg,var(--mint),var(--teal));color:white!important;border-color:transparent!important;box-shadow:0 3px 10px rgba(107,203,119,0.35);}
+.pomo-dots{display:flex;gap:5px;justify-content:center;margin-top:6px;}
+.pomo-dot{width:9px;height:9px;border-radius:50%;border:2px solid var(--pink);transition:background 0.2s;}
+.pomo-dot.filled{background:var(--pink);}
+.small-input-row{display:flex;gap:7px;}
+.small-input-row input{
+  font-family:'Nunito',sans-serif;border:2px solid var(--border);
+  border-radius:10px;padding:8px 10px;font-size:0.82rem;
+  outline:none;flex:1;background:var(--input-bg);color:var(--text);
+}
+.small-input-row input:focus{border-color:var(--pink);}
+/* MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,0.5);z-index:100;
+  align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--card);border-radius:20px;padding:24px;
+  width:90%;max-width:400px;position:relative;
+  box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  border:2px solid var(--border);text-align:center;
+}
+.modal-close{
+  position:absolute;right:14px;top:14px;
+  background:var(--cell-bg);border:none;border-radius:8px;
+  width:27px;height:27px;cursor:pointer;font-size:0.95rem;color:var(--text);
+}
+@media print{
+  .sidebar,.header-actions,.streak-badge,.pomo-controls,.hours-ctrl,
+  .del-btn,.check-btn,.expand-btn,.add-btn,.modal-overlay,.nav-btn{display:none!important;}
+  body{background:white!important;background-image:none!important;}
+  .app{grid-template-columns:1fr!important;}
+  .card{box-shadow:none!important;border:1px solid #ddd!important;break-inside:avoid;}
+  header h1{-webkit-text-fill-color:#333;background:none;color:#333;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="streak-badge" id="streak-badge">🔥 <span id="streak-num">0</span> day streak</div>
+  <h1>StudyVibes</h1>
+  <p>Your colorful study companion</p>
+  <div class="header-actions">
+    <button class="icon-btn" id="dark-btn" onclick="toggleDark()">🌙 Dark</button>
+  </div>
+</header>
+
+<div class="app">
+  <div class="main-col">
+    <div class="card">
+      <div class="cal-header">
+        <button class="nav-btn" onclick="changeMonth(-1)">‹</button>
+        <h2 id="month-label"></h2>
+        <button class="nav-btn" onclick="changeMonth(1)">›</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+    <div class="card">
+      <p class="selected-date-label" id="selected-label">📋 Tasks for Today</p>
+      <div id="task-list"></div>
+    </div>
+    <!-- TRACKER moved here -->
+    <div class="card">
+      <p class="section-title">📊 Weekly Study Tracker</p>
+      <div class="tracker-grid" id="tracker-grid"></div>
+      <div class="hours-ctrl">
+        <button class="h-btn" onclick="changeHours(-0.5)">−</button>
+        <span class="today-hours" id="today-hours-label">0h today</span>
+        <button class="h-btn" onclick="changeHours(0.5)">+</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <!-- ADD TASK -->
+    <div class="card">
+      <p class="section-title">➕ Add Task</p>
+      <div class="add-form">
+        <input type="text" id="task-name" placeholder="Task name..." />
+        <input type="date" id="task-date" />
+        <div class="row2">
+          <input type="text" id="task-subject" placeholder="Subject..." />
+          <select id="task-recur">
+            <option value="">One-time</option>
+            <option value="daily">Every day</option>
+            <option value="weekly">Weekly (same day)</option>
+            <option value="1">Every Monday</option>
+            <option value="2">Every Tuesday</option>
+            <option value="3">Every Wednesday</option>
+            <option value="4">Every Thursday</option>
+            <option value="5">Every Friday</option>
+          </select>
+        </div>
+        <textarea id="task-notes" placeholder="Notes or links (optional)..."></textarea>
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;color:var(--muted);margin-bottom:5px">PRIORITY</p>
+          <div class="priority-row">
+            <button class="pri-btn active-low" id="pri-low" onclick="setPriority('low')">🟢 Low</button>
+            <button class="pri-btn" id="pri-med" onclick="setPriority('med')">🟡 Medium</button>
+            <button class="pri-btn" id="pri-high" onclick="setPriority('high')">🔴 Urgent</button>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:0.72rem;font-weight:700;color:var(--muted);margin-bottom:5px">COLOR</p>
+          <div class="color-pick" id="color-pick"></div>
+        </div>
+        <button class="add-btn" onclick="addTask()">Add Task 🎯</button>
+      </div>
+    </div>
+
+    <!-- POMODORO -->
+    <div class="card">
+      <p class="section-title">🍅 Pomodoro Timer</p>
+
+      <!-- MODE SELECTOR -->
+      <div style="display:flex;gap:5px;margin-bottom:14px">
+        <button id="mode-tab-focus" class="mode-tab mode-tab-active" onclick="switchMode('focus')">Focus</button>
+        <button id="mode-tab-short" class="mode-tab" onclick="switchMode('short')">Short Break</button>
+        <button id="mode-tab-long" class="mode-tab" onclick="switchMode('long')">Long Break</button>
+      </div>
+
+      <div class="pomo-ring">
+        <svg width="118" height="118" viewBox="0 0 118 118">
+          <circle class="ring-bg" cx="59" cy="59" r="51"/>
+          <circle class="ring-fill" id="pomo-ring-fill" cx="59" cy="59" r="51"
+            stroke-dasharray="320.4" stroke-dashoffset="0"/>
+        </svg>
+        <div class="pomo-center">
+          <div class="pomo-time" id="pomo-display">25:00</div>
+          <div class="pomo-label" id="pomo-mode-label">Focus</div>
+        </div>
+      </div>
+      <div class="pomo-controls">
+        <button class="pomo-btn" id="pomo-start-btn" onclick="togglePomo()">▶ Start</button>
+        <button class="pomo-btn secondary" onclick="resetPomo()">↺ Reset</button>
+      </div>
+
+      <!-- CUSTOM TIMES -->
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:7px">
+        <div>
+          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Focus (min)</p>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="pomo-focus-input" min="1" max="120" value="25"
+              style="font-family:'Nunito',sans-serif;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+              oninput="applyCustomTimes()" />
+          </div>
+        </div>
+        <div>
+          <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Break (min)</p>
+          <div style="display:flex;align-items:center;gap:5px">
+            <input type="number" id="pomo-break-input" min="1" max="60" value="5"
+              style="font-family:'Nunito',sans-serif;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+              oninput="applyCustomTimes()" />
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:7px">
+        <p style="font-size:0.68rem;font-weight:800;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.5px">Long Break (min)</p>
+        <input type="number" id="pomo-long-input" min="1" max="120" value="15"
+          style="font-family:'Nunito',sans-serif;border:2px solid var(--border);border-radius:10px;padding:6px 8px;font-size:0.88rem;outline:none;width:100%;background:var(--input-bg);color:var(--text);font-weight:700"
+          oninput="applyCustomTimes()" />
+      </div>
+
+      <!-- SESSIONS -->
+      <div style="margin-top:12px;display:flex;align-items:center;justify-content:space-between">
+        <div class="pomo-sessions" style="text-align:left">Sessions today: <span id="pomo-count">0</span></div>
+        <div style="display:flex;align-items:center;gap:5px">
+          <button class="h-btn" onclick="changeSessions(-1)" style="background:var(--cell-bg);border:2px solid var(--border)">−</button>
+          <button class="h-btn" onclick="changeSessions(1)" style="background:var(--yellow)">+</button>
+        </div>
+      </div>
+      <div class="pomo-dots" id="pomo-dots"></div>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="card">
+      <p class="section-title">⏰ Exam Countdown</p>
+      <div class="countdown-list" id="countdown-list"></div>
+      <div class="small-input-row" style="margin-top:10px">
+        <input type="text" id="exam-name" placeholder="Exam name..." />
+        <input type="date" id="exam-date" />
+      </div>
+      <button class="add-btn" style="margin-top:8px;background:linear-gradient(135deg,var(--blue),var(--purple))" onclick="addExam()">Add Exam 📝</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- POMO MODAL -->
+<div class="modal-overlay" id="pomo-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closePomoModal()">✕</button>
+    <div style="font-size:3rem;margin-bottom:10px" id="pomo-modal-icon">🎉</div>
+    <h3 style="font-size:1.1rem;font-weight:900;margin-bottom:8px" id="pomo-modal-title">Session Complete!</h3>
+    <p style="color:var(--muted);font-size:0.88rem;margin-bottom:18px" id="pomo-modal-msg">Take a short break!</p>
+    <button class="add-btn" onclick="closePomoModal()" style="width:100%">Let's go! 💪</button>
+  </div>
+</div>
+
+<script>
+const COLORS=['#FF6B9D','#FFD93D','#6BCB77','#4D96FF','#C77DFF','#FF9A3C','#FF4D6D','#00C9A7'];
+let selectedColor=COLORS[0],selectedPriority='low';
+let currentDate=new Date(),selectedDay=new Date();
+let tasks=JSON.parse(localStorage.getItem('sv_tasks')||'[]');
+let exams=JSON.parse(localStorage.getItem('sv_exams')||'[]');
+let studyHours=JSON.parse(localStorage.getItem('sv_hours')||'{}');
+let streakData=JSON.parse(localStorage.getItem('sv_streak')||'{"streak":0,"lastDate":""}');
+let pomodoroCount=parseInt(localStorage.getItem('sv_pomo_count')||'0');
+let darkMode=localStorage.getItem('sv_dark')==='1';
+
+if(darkMode){document.body.classList.add('dark');document.getElementById('dark-btn').textContent='☀️ Light';}
+function toggleDark(){
+  darkMode=!darkMode;document.body.classList.toggle('dark',darkMode);
+  document.getElementById('dark-btn').textContent=darkMode?'☀️ Light':'🌙 Dark';
+  localStorage.setItem('sv_dark',darkMode?'1':'0');
+}
+
+// COLOR PICKER
+const cp=document.getElementById('color-pick');
+COLORS.forEach(c=>{
+  const s=document.createElement('div');
+  s.className='color-swatch'+(c===selectedColor?' active':'');
+  s.style.background=c;
+  s.onclick=()=>{document.querySelectorAll('.color-swatch').forEach(x=>x.classList.remove('active'));s.classList.add('active');selectedColor=c;};
+  cp.appendChild(s);
+});
+
+function setPriority(p){
+  selectedPriority=p;
+  ['low','med','high'].forEach(x=>{
+    document.getElementById('pri-'+x).className='pri-btn'+(x===p?' active-'+x:'');
+  });
+}
+
+function toDateStr(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function formatDisplay(d){return d.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});}
+
+document.getElementById('task-date').value=toDateStr(new Date());
+document.getElementById('exam-date').value=toDateStr(new Date());
+
+function save(){
+  localStorage.setItem('sv_tasks',JSON.stringify(tasks));
+  localStorage.setItem('sv_exams',JSON.stringify(exams));
+  localStorage.setItem('sv_hours',JSON.stringify(studyHours));
+  localStorage.setItem('sv_streak',JSON.stringify(streakData));
+  localStorage.setItem('sv_pomo_count',pomodoroCount);
+}
+
+// STREAK
+function updateStreak(){
+  const todayStr=toDateStr(new Date());
+  const todayDone=tasks.filter(t=>t.date===todayStr&&t.done).length;
+  // also count recurring tasks done today
+  if(todayDone>0){
+    if(streakData.lastDate!==todayStr){
+      const yesterday=new Date();yesterday.setDate(yesterday.getDate()-1);
+      if(streakData.lastDate===toDateStr(yesterday)){streakData.streak++;}
+      else if(streakData.lastDate!==todayStr){streakData.streak=1;}
+      streakData.lastDate=todayStr;save();
+    }
+  }
+  document.getElementById('streak-num').textContent=streakData.streak;
+}
+
+// CALENDAR
+function renderCalendar(){
+  const grid=document.getElementById('cal-grid');
+  const y=currentDate.getFullYear(),m=currentDate.getMonth();
+  document.getElementById('month-label').textContent=new Date(y,m,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  grid.innerHTML='';
+  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].forEach(d=>{
+    const el=document.createElement('div');el.className='day-label';el.textContent=d;grid.appendChild(el);
+  });
+  const first=new Date(y,m,1).getDay();
+  const dim=new Date(y,m+1,0).getDate();
+  const prev=new Date(y,m,0).getDate();
+  const today=toDateStr(new Date());
+  const sel=toDateStr(selectedDay);
+  for(let i=0;i<first;i++){
+    const day=prev-first+i+1;
+    const ds=(m===0?y-1:y)+'-'+String(m===0?12:m).padStart(2,'0')+'-'+String(day).padStart(2,'0');
+    const el=document.createElement('div');el.className='day-cell other-month';
+    el.innerHTML=`<span class="day-num">${day}</span>`;
+    addDots(el,ds);el.onclick=()=>selectDay(new Date(ds+'T12:00:00'));grid.appendChild(el);
+  }
+  for(let d=1;d<=dim;d++){
+    const ds=y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const el=document.createElement('div');
+    el.className='day-cell'+(ds===today?' today':'')+(ds===sel?' selected':'');
+    el.innerHTML=`<span class="day-num">${d}</span>`;
+    addDots(el,ds);el.onclick=()=>selectDay(new Date(ds+'T12:00:00'));grid.appendChild(el);
+  }
+  const rem=42-first-dim;
+  for(let d=1;d<=rem;d++){
+    const ds=(m===11?y+1:y)+'-'+String(m===11?1:m+2).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+    const el=document.createElement('div');el.className='day-cell other-month';
+    el.innerHTML=`<span class="day-num">${d}</span>`;
+    addDots(el,ds);el.onclick=()=>selectDay(new Date(ds+'T12:00:00'));grid.appendChild(el);
+  }
+}
+
+function getRecurring(ds,dow){
+  return tasks.filter(t=>{
+    if(!t.recur)return false;
+    if(t.recur==='daily')return true;
+    if(t.recur==='weekly'){const od=new Date(t.date+'T12:00:00').getDay();return od===dow;}
+    return parseInt(t.recur)===dow;
+  });
+}
+
+function addDots(el,ds){
+  const dow=new Date(ds+'T12:00:00').getDay();
+  const all=[...tasks.filter(t=>t.date===ds&&!t.recur),...getRecurring(ds,dow)];
+  if(all.length){
+    const row=document.createElement('div');row.className='dot-row';
+    all.slice(0,5).forEach(t=>{const d=document.createElement('div');d.className='dot';d.style.background=t.color;row.appendChild(d);});
+    el.appendChild(row);
+  }
+}
+
+function selectDay(d){
+  selectedDay=d;document.getElementById('task-date').value=toDateStr(d);
+  renderCalendar();renderTasks();
+}
+
+// TASKS
+const PRICOLOR={low:'#6BCB77',med:'#FFD93D',high:'#FF4D6D'};
+function getTasksForDay(ds){
+  const dow=new Date(ds+'T12:00:00').getDay();
+  return [...tasks.filter(t=>t.date===ds&&!t.recur),...getRecurring(ds,dow)];
+}
+function renderTasks(){
+  const ds=toDateStr(selectedDay);
+  const isToday=ds===toDateStr(new Date());
+  document.getElementById('selected-label').textContent=isToday?'📋 Tasks for Today':'📋 Tasks for '+formatDisplay(selectedDay);
+  const list=document.getElementById('task-list');
+  const dayTasks=getTasksForDay(ds);
+  const po={high:0,med:1,low:2};
+  dayTasks.sort((a,b)=>{
+    if(a.done!==b.done)return a.done?1:-1;
+    return (po[a.priority||'low'])-(po[b.priority||'low']);
+  });
+  if(!dayTasks.length){list.innerHTML='<p class="no-tasks">No tasks this day 🌸<br>Add one using the form!</p>';return;}
+  list.innerHTML='';
+  dayTasks.forEach(t=>{
+    const el=document.createElement('div');
+    el.className='task-item'+(t.done?' task-done':'');
+    el.style.borderLeftColor=t.color;
+    const hasNotes=t.notes&&t.notes.trim();
+    const notesHtml=hasNotes?t.notes.replace(/(https?:\/\/[^\s]+)/g,'<a href="$1" target="_blank">$1</a>'):'';
+    el.innerHTML=`
+      <div class="task-main">
+        <div class="check-btn ${t.done?'checked':''}" onclick="toggleTask('${t.id}',event)">${t.done?'✓':''}</div>
+        <div class="priority-dot" style="background:${PRICOLOR[t.priority||'low']}"></div>
+        <div class="task-text">${escHtml(t.name)}${t.recur?` <span class="recurring-badge">↻</span>`:''}</div>
+        ${t.subject?`<span class="task-subject" style="background:${t.color}">${escHtml(t.subject)}</span>`:''}
+        ${hasNotes?`<button class="expand-btn" onclick="toggleNotes('${t.id}',this)" title="Show notes">📎</button>`:''}
+        <button class="del-btn" onclick="deleteTask('${t.id}')">🗑</button>
+      </div>
+      ${hasNotes?`<div class="task-notes-body" id="notes-${t.id}">${notesHtml}</div>`:''}
+    `;
+    list.appendChild(el);
+  });
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function toggleNotes(id,btn){
+  const el=document.getElementById('notes-'+id);
+  if(el){el.classList.toggle('open');btn.style.opacity=el.classList.contains('open')?'1':'0.45';}
+}
+
+function addTask(){
+  const name=document.getElementById('task-name').value.trim();
+  const date=document.getElementById('task-date').value;
+  const subject=document.getElementById('task-subject').value.trim();
+  const notes=document.getElementById('task-notes').value.trim();
+  const recur=document.getElementById('task-recur').value;
+  if(!name||!date)return;
+  tasks.push({id:Date.now()+'',name,date,subject,notes,recur,color:selectedColor,priority:selectedPriority,done:false});
+  save();
+  document.getElementById('task-name').value='';
+  document.getElementById('task-subject').value='';
+  document.getElementById('task-notes').value='';
+  document.getElementById('task-recur').value='';
+  renderCalendar();renderTasks();
+}
+
+function toggleTask(id,e){
+  e.stopPropagation();
+  const t=tasks.find(t=>t.id===id);
+  if(t){t.done=!t.done;save();updateStreak();renderTasks();}
+}
+function deleteTask(id){tasks=tasks.filter(t=>t.id!==id);save();renderCalendar();renderTasks();}
+function changeMonth(dir){currentDate=new Date(currentDate.getFullYear(),currentDate.getMonth()+dir,1);renderCalendar();}
+
+// EXAMS
+function renderExams(){
+  const list=document.getElementById('countdown-list');list.innerHTML='';
+  const today=new Date();today.setHours(0,0,0,0);
+  const upcoming=exams.map(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    return{...e,days:Math.ceil((d-today)/86400000)};
+  }).filter(e=>e.days>=0).sort((a,b)=>a.days-b.days).slice(0,4);
+  if(!upcoming.length){list.innerHTML='<p class="empty-state">No upcoming exams 🎉</p>';return;}
+  const grads=['linear-gradient(135deg,#FF6B9D,#C77DFF)','linear-gradient(135deg,#4D96FF,#00C9A7)','linear-gradient(135deg,#FF9A3C,#FFD93D)','linear-gradient(135deg,#6BCB77,#4D96FF)'];
+  upcoming.forEach((e,i)=>{
+    const el=document.createElement('div');el.className='countdown-item';el.style.background=grads[i%4];
+    el.innerHTML=`
+      <div>
+        <div style="font-size:0.8rem">${e.name}</div>
+        <div style="font-size:0.66rem;opacity:0.8">${new Date(e.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span class="countdown-days">${e.days===0?'TODAY':e.days+'d'}</span>
+        <button onclick="deleteExam('${e.id}')" style="background:rgba(255,255,255,0.3);border:none;border-radius:6px;color:white;cursor:pointer;padding:2px 6px;font-size:0.78rem">✕</button>
+      </div>`;
+    list.appendChild(el);
+  });
+}
+function addExam(){
+  const name=document.getElementById('exam-name').value.trim();
+  const date=document.getElementById('exam-date').value;
+  if(!name||!date)return;
+  exams.push({id:Date.now()+'',name,date});
+  save();renderExams();document.getElementById('exam-name').value='';
+}
+function deleteExam(id){exams=exams.filter(e=>e.id!==id);save();renderExams();}
+
+// TRACKER
+function getWeekDays(){
+  const today=new Date();today.setHours(0,0,0,0);
+  const dow=today.getDay();const days=[];
+  for(let i=0;i<7;i++){const d=new Date(today);d.setDate(today.getDate()-dow+i);days.push(d);}
+  return days;
+}
+const BAR_COLORS=['#FF6B9D','#FF9A3C','#FFD93D','#6BCB77','#4D96FF','#C77DFF','#FF6B9D'];
+function renderTracker(){
+  const grid=document.getElementById('tracker-grid');grid.innerHTML='';
+  const todayStr=toDateStr(new Date());const maxH=8;
+  getWeekDays().forEach((d,i)=>{
+    const ds=toDateStr(d);const h=studyHours[ds]||0;
+    const pct=Math.min(h/maxH*100,100);const isToday=ds===todayStr;
+    const labels=['Su','Mo','Tu','We','Th','Fr','Sa'];
+    const el=document.createElement('div');el.className='tracker-day';
+    el.innerHTML=`
+      <div class="tracker-label" style="${isToday?'color:var(--pink)':''}">${labels[i]}</div>
+      <div class="tracker-bar" style="${isToday?'border:2px solid var(--pink)':''}">
+        <div class="tracker-fill" style="height:${pct}%;background:${BAR_COLORS[i]}${isToday?'':'99'}"></div>
+      </div>
+      <div class="tracker-hours" style="${isToday?'color:var(--pink)':''}">${h>0?h+'h':'-'}</div>`;
+    grid.appendChild(el);
+  });
+  const todayH=studyHours[todayStr]||0;
+  document.getElementById('today-hours-label').textContent=todayH+'h today';
+}
+function changeHours(delta){
+  const ds=toDateStr(new Date());
+  studyHours[ds]=Math.max(0,Math.min(24,(studyHours[ds]||0)+delta));
+  save();renderTracker();
+}
+
+// POMODORO
+const CIRC=2*Math.PI*51; // ~320.4
+let DURATIONS={focus:25*60,short:5*60,long:15*60};
+let pomo={mode:'focus',timeLeft:25*60,running:false,interval:null,sessToday:pomodoroCount};
+
+function switchMode(mode){
+  if(pomo.running){clearInterval(pomo.interval);pomo.running=false;document.getElementById('pomo-start-btn').textContent='▶ Start';}
+  pomo.mode=mode;
+  pomo.timeLeft=DURATIONS[mode];
+  updatePomoDisplay();
+  // update tab styles
+  ['focus','short','long'].forEach(m=>{
+    const btn=document.getElementById('mode-tab-'+m);
+    btn.className='mode-tab';
+    if(m===mode) btn.classList.add(mode==='focus'?'mode-tab-active':'mode-tab-break');
+  });
+}
+
+function applyCustomTimes(){
+  if(pomo.running) return;
+  const f=parseInt(document.getElementById('pomo-focus-input').value)||25;
+  const b=parseInt(document.getElementById('pomo-break-input').value)||5;
+  const l=parseInt(document.getElementById('pomo-long-input').value)||15;
+  DURATIONS={focus:f*60,short:b*60,long:l*60};
+  pomo.timeLeft=DURATIONS[pomo.mode];
+  updatePomoDisplay();
+}
+
+function updatePomoDisplay(){
+  const m=Math.floor(pomo.timeLeft/60),s=pomo.timeLeft%60;
+  document.getElementById('pomo-display').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('pomo-mode-label').textContent=pomo.mode==='focus'?'Focus':pomo.mode==='short'?'Short Break':'Long Break';
+  const total=DURATIONS[pomo.mode];
+  const frac=pomo.timeLeft/total;
+  const offset=CIRC*(1-frac);
+  const ring=document.getElementById('pomo-ring-fill');
+  ring.style.strokeDashoffset=offset;
+  ring.style.stroke=pomo.mode==='focus'?'var(--pink)':'var(--mint)';
+}
+
+function renderPomoDots(){
+  const dots=document.getElementById('pomo-dots');dots.innerHTML='';
+  document.getElementById('pomo-count').textContent=pomo.sessToday;
+  const filled=pomo.sessToday%4;
+  for(let i=0;i<4;i++){
+    const d=document.createElement('div');
+    d.className='pomo-dot'+(i<filled?' filled':'');
+    dots.appendChild(d);
+  }
+}
+
+function changeSessions(delta){
+  pomo.sessToday=Math.max(0,pomo.sessToday+delta);
+  pomodoroCount=pomo.sessToday;save();renderPomoDots();
+}
+
+function togglePomo(){
+  if(pomo.running){
+    clearInterval(pomo.interval);pomo.running=false;
+    document.getElementById('pomo-start-btn').textContent='▶ Resume';
+  } else {
+    pomo.running=true;
+    document.getElementById('pomo-start-btn').textContent='⏸ Pause';
+    pomo.interval=setInterval(()=>{
+      pomo.timeLeft--;updatePomoDisplay();
+      if(pomo.timeLeft<=0){
+        clearInterval(pomo.interval);pomo.running=false;
+        document.getElementById('pomo-start-btn').textContent='▶ Start';
+        if(pomo.mode==='focus'){
+          pomo.sessToday++;pomodoroCount=pomo.sessToday;save();renderPomoDots();
+          const isLong=pomo.sessToday%4===0;
+          showPomoModal(false,isLong);
+          switchMode(isLong?'long':'short');
+        } else {
+          showPomoModal(true);
+          switchMode('focus');
+        }
+      }
+    },1000);
+  }
+}
+
+function resetPomo(){
+  clearInterval(pomo.interval);pomo.running=false;
+  document.getElementById('pomo-start-btn').textContent='▶ Start';
+  switchMode('focus');
+}
+
+function showPomoModal(isFocusTime,isLong){
+  const icon=document.getElementById('pomo-modal-icon');
+  const title=document.getElementById('pomo-modal-title');
+  const msg=document.getElementById('pomo-modal-msg');
+  if(isFocusTime){icon.textContent='💪';title.textContent='Break Over!';msg.textContent='Time to focus again. You got this!';}
+  else{
+    icon.textContent=isLong?'🏆':'🎉';
+    title.textContent=isLong?'Long Break Time!':'Session Complete!';
+    msg.textContent=isLong?'4 sessions done! Take a well-deserved long break.':'Take a short break — you earned it!';
+  }
+  document.getElementById('pomo-modal').classList.add('open');
+}
+function closePomoModal(){document.getElementById('pomo-modal').classList.remove('open');}
+
+// INIT
+renderCalendar();renderTasks();renderExams();renderTracker();
+updatePomoDisplay();renderPomoDots();updateStreak();
+</script>
+</body>
+</html>
